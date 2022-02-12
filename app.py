@@ -24,6 +24,10 @@ class Prediction(db.Model):
         return f"Prediction(id={self.id}, date-created={self.createdAt}, result={self.outcome}, user-input={self.inputs})"
 
 
+# initialize db
+db.create_all()
+
+
 # api routes
 @app.route('/')
 def index():
