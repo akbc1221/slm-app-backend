@@ -43,6 +43,15 @@ def getRecent():
         return Status(500, "Server error! Could not get data").get()
 
 
+@app.route('/api/recent/<int:id>')
+def getRecentById(id):
+    try:
+        obj = Prediction.query.get(id)
+        return jsonify(object_serializer(obj))
+    except:
+        return Status(500, "Server error! Could not get data").get()
+
+
 @app.route('/api/predict', methods=['POST'])
 def predict():
     try:
