@@ -20,11 +20,10 @@ class Prediction(db.Model):
     outcome = db.Column(db.Text, nullable=False)
     inputs = db.Column(db.Text, nullable=False)
     starred = db.Column(db.Boolean, default=False)
-
-    # tags = db.Column(db.Text)
+    tags = db.Column(db.Text, default="")
 
     def __str__(self):
-        return f"Prediction(id={self.id}, date-created={self.createdAt}, result={self.outcome}, user-input={self.inputs})"
+        return f"Prediction(id={self.id}, date-created={self.createdAt}, result={self.outcome}, user-input={self.inputs}), starred={self.starred}, tags={self.tags}"
 
 
 # initialize db
@@ -74,7 +73,9 @@ def save_predicted():
         dateObj = datetime.fromisoformat(request_data['createdAt'])
         res = Prediction(createdAt=dateObj,
                          outcome=json.dumps(request_data['outcome']),
-                         inputs=json.dumps(request_data['inputs']))
+                         inputs=json.dumps(request_data['inputs']),
+                         tags=request_data['tags'])
+        print(res)
         db.session.add(res)
         db.session.commit()
         return Status(201, "predicted outcome saved successfully").get()

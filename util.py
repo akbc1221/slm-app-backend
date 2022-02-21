@@ -8,7 +8,7 @@ def object_serializer(obj):
         "outcome": obj.outcome,
         "inputs": obj.inputs,
         "starred": obj.starred,
-        # "tags": obj.tags
+        "tags": obj.tags
     }
 
 
