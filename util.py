@@ -6,7 +6,9 @@ def object_serializer(obj):
         'id': obj.id,
         "createdAt": obj.createdAt,
         "outcome": obj.outcome,
-        "inputs": obj.inputs
+        "inputs": obj.inputs,
+        "starred": obj.starred,
+        # "tags": obj.tags
     }
 
 

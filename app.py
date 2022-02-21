@@ -19,6 +19,9 @@ class Prediction(db.Model):
     createdAt = db.Column(db.DateTime)
     outcome = db.Column(db.Text, nullable=False)
     inputs = db.Column(db.Text, nullable=False)
+    starred = db.Column(db.Boolean, default=False)
+
+    # tags = db.Column(db.Text)
 
     def __str__(self):
         return f"Prediction(id={self.id}, date-created={self.createdAt}, result={self.outcome}, user-input={self.inputs})"
@@ -58,7 +61,8 @@ def predict():
         model = Model()
         request_data = json.loads(request.data)
         converted_data = convert_for_model(request_data)
-        return str(model.predict_result(converted_data)[0])
+        predicted = model.predict_result(converted_data)[0]
+        return str(float("{:.4f}".format(predicted)))
     except:
         return Status(400, "Failed to compute result with given inputs").get()
 
@@ -96,6 +100,17 @@ def deleteAll():
         return Status(200, "all recent prediction deleted").get()
     except:
         return Status(500, "Server error! Could not delete data").get()
+
+
+@app.route('/api/update/<int:id>', methods=['PATCH'])
+def starResult(id):
+    try:
+        prevState = object_serializer(Prediction.query.get(id))["starred"]
+        Prediction.query.filter_by(id=id).update(dict(starred=(not prevState)))
+        db.session.commit()
+        return Status(200, "recent prediction updated").get()
+    except:
+        return Status(500, "Server error! Could not update data").get()
 
 
 @app.errorhandler(404)
