@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request, json, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import true
 from flask_cors import CORS
-from datetime import datetime
+from datetime import datetime, timedelta
 from util import object_serializer, convert_for_model
 from model import Model
 from status import Status
@@ -75,7 +76,6 @@ def save_predicted():
                          outcome=json.dumps(request_data['outcome']),
                          inputs=json.dumps(request_data['inputs']),
                          tags=request_data['tags'])
-        print(res)
         db.session.add(res)
         db.session.commit()
         return Status(201, "predicted outcome saved successfully").get()
@@ -112,6 +112,36 @@ def starResult(id):
         return Status(200, "recent prediction updated").get()
     except:
         return Status(500, "Server error! Could not update data").get()
+
+
+@app.route('/api/search', methods=['GET'])
+def searchRecent():
+    try:
+        tag = request.args.get('tag')
+        status = request.args.get('status')
+        starred = request.args.get('starred')
+        recent = request.args.get('recent')
+        tags_query = starred_query = status_query = recent_query = true()
+        if tag:
+            tags_query = Prediction.tags.contains(tag)
+
+        if status:
+            status_query = Prediction.outcome.contains(status)
+
+        if starred:
+            starred = True if starred == 'true' else False
+            starred_query = Prediction.starred == starred
+
+        if recent:
+            now = datetime.now() + timedelta(hours=5, minutes=30)
+            recent_query = (now - timedelta(days=int(recent)) <=
+                            Prediction.createdAt)
+
+        searchResult = Prediction.query.filter((tags_query & starred_query
+                                                & status_query & recent_query))
+        return jsonify([*map(object_serializer, searchResult)])
+    except:
+        return Status(500, "Server error! Could not get data").get()
 
 
 @app.errorhandler(404)
